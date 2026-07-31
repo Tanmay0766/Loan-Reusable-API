@@ -15,6 +15,12 @@ public class LoanApplication {
     @Column(name = "applicant_name", nullable = false, length = 100)
     private String applicantName;
 
+    @Column(name = "date_of_birth")
+    private java.time.LocalDate dateOfBirth;
+
+    @Column(name = "gender", length = 10)
+    private String gender;
+
     @Column(name = "loan_type", nullable = false, length = 30)
     private String loanType;
 
