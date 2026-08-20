@@ -1,4 +1,4 @@
-package com.LoanAPI.Hero.Loan.Platform.aadhaar;
+package com.LoanAPI.Hero.Loan.Platform.gst;
 
 import com.LoanAPI.Hero.Loan.Platform.application.ApplicationRepository;
 import com.LoanAPI.Hero.Loan.Platform.application.LoanApplication;
@@ -18,31 +18,31 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/validate/aadhaar")
-public class AadhaarController {
+@RequestMapping("/validate/gst")
+public class GstController {
 
-    private static final String STAGE_NAME = "AADHAAR";
+    private static final String STAGE_NAME = "GST";
 
-    private final AadhaarValidator aadhaarValidator;
+    private final GstValidator gstValidator;
     private final ValidationResultRepository validationResultRepository;
     private final ApplicationRepository applicationRepository;
     private final StageSequenceEnforcer stageSequenceEnforcer;
 
-    public AadhaarController(AadhaarValidator aadhaarValidator,
-                             ValidationResultRepository validationResultRepository,
-                             ApplicationRepository applicationRepository,
-                             StageSequenceEnforcer stageSequenceEnforcer) {
-        this.aadhaarValidator = aadhaarValidator;
+    public GstController(GstValidator gstValidator,
+                         ValidationResultRepository validationResultRepository,
+                         ApplicationRepository applicationRepository,
+                         StageSequenceEnforcer stageSequenceEnforcer) {
+        this.gstValidator = gstValidator;
         this.validationResultRepository = validationResultRepository;
         this.applicationRepository = applicationRepository;
         this.stageSequenceEnforcer = stageSequenceEnforcer;
     }
 
     @PostMapping
-    public ResponseEntity<Map<String, Object>> validateAadhaar(@RequestBody AadhaarRequest request) {
+    public ResponseEntity<Map<String, Object>> validateGst(@RequestBody GstRequest request) {
 
         Optional<String> prerequisiteError = stageSequenceEnforcer.checkPrerequisites(
-                request.getApplicationId(), StageOrder.AADHAAR, false);
+                request.getApplicationId(), StageOrder.GST, false);
 
         if (prerequisiteError.isPresent()) {
             Map<String, Object> response = Map.of(
@@ -52,7 +52,7 @@ public class AadhaarController {
             return new ResponseEntity<>(response, HttpStatus.PRECONDITION_FAILED);
         }
 
-        List<String> failureReasons = aadhaarValidator.validate(request);
+        List<String> failureReasons = gstValidator.validate(request);
         boolean passed = failureReasons.isEmpty();
 
         StageValidationResult result = new StageValidationResult();

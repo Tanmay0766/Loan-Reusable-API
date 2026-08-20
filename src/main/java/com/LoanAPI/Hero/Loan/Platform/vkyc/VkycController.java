@@ -2,6 +2,8 @@ package com.LoanAPI.Hero.Loan.Platform.vkyc;
 
 import com.LoanAPI.Hero.Loan.Platform.application.ApplicationRepository;
 import com.LoanAPI.Hero.Loan.Platform.application.LoanApplication;
+import com.LoanAPI.Hero.Loan.Platform.validation.StageOrder;
+import com.LoanAPI.Hero.Loan.Platform.validation.StageSequenceEnforcer;
 import com.LoanAPI.Hero.Loan.Platform.validation.StageValidationResult;
 import com.LoanAPI.Hero.Loan.Platform.validation.ValidationResultRepository;
 import org.springframework.http.HttpStatus;
@@ -24,17 +26,31 @@ public class VkycController {
     private final VkycValidator vkycValidator;
     private final ValidationResultRepository validationResultRepository;
     private final ApplicationRepository applicationRepository;
+    private final StageSequenceEnforcer stageSequenceEnforcer;
 
     public VkycController(VkycValidator vkycValidator,
                           ValidationResultRepository validationResultRepository,
-                          ApplicationRepository applicationRepository) {
+                          ApplicationRepository applicationRepository,
+                          StageSequenceEnforcer stageSequenceEnforcer) {
         this.vkycValidator = vkycValidator;
         this.validationResultRepository = validationResultRepository;
         this.applicationRepository = applicationRepository;
+        this.stageSequenceEnforcer = stageSequenceEnforcer;
     }
 
     @PostMapping
     public ResponseEntity<Map<String, Object>> validateVkyc(@RequestBody VkycRequest request) {
+
+        Optional<String> prerequisiteError = stageSequenceEnforcer.checkPrerequisites(
+                request.getApplicationId(), StageOrder.VKYC, request.isGstApplicable());
+
+        if (prerequisiteError.isPresent()) {
+            Map<String, Object> response = Map.of(
+                    "passed", false,
+                    "failureReasons", List.of(prerequisiteError.get())
+            );
+            return new ResponseEntity<>(response, HttpStatus.PRECONDITION_FAILED);
+        }
 
         List<String> failureReasons = vkycValidator.validate(request);
         boolean passed = failureReasons.isEmpty();

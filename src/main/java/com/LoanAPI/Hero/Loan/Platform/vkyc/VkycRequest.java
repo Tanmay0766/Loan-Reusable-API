@@ -19,6 +19,16 @@ public class VkycRequest {
     private String remarks;
     private String rejectionReason;
 
+    private boolean gstApplicable;
+
+    public boolean isGstApplicable() {
+        return gstApplicable;
+    }
+
+    public void setGstApplicable(boolean gstApplicable) {
+        this.gstApplicable = gstApplicable;
+    }
+
     public Long getApplicationId() {
         return applicationId;
     }

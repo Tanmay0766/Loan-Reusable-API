@@ -2,6 +2,8 @@ package com.LoanAPI.Hero.Loan.Platform.pan;
 
 import com.LoanAPI.Hero.Loan.Platform.application.ApplicationRepository;
 import com.LoanAPI.Hero.Loan.Platform.application.LoanApplication;
+import com.LoanAPI.Hero.Loan.Platform.validation.StageOrder;
+import com.LoanAPI.Hero.Loan.Platform.validation.StageSequenceEnforcer;
 import com.LoanAPI.Hero.Loan.Platform.validation.StageValidationResult;
 import com.LoanAPI.Hero.Loan.Platform.validation.ValidationResultRepository;
 import org.springframework.http.HttpStatus;
@@ -24,17 +26,31 @@ public class PanController {
     private final PanValidator panValidator;
     private final ValidationResultRepository validationResultRepository;
     private final ApplicationRepository applicationRepository;
+    private final StageSequenceEnforcer stageSequenceEnforcer;
 
     public PanController(PanValidator panValidator,
                          ValidationResultRepository validationResultRepository,
-                         ApplicationRepository applicationRepository) {
+                         ApplicationRepository applicationRepository,
+                         StageSequenceEnforcer stageSequenceEnforcer) {
         this.panValidator = panValidator;
         this.validationResultRepository = validationResultRepository;
         this.applicationRepository = applicationRepository;
+        this.stageSequenceEnforcer = stageSequenceEnforcer;
     }
 
     @PostMapping
     public ResponseEntity<Map<String, Object>> validatePan(@RequestBody PanRequest request) {
+
+        Optional<String> prerequisiteError = stageSequenceEnforcer.checkPrerequisites(
+                request.getApplicationId(), StageOrder.PAN, false);
+
+        if (prerequisiteError.isPresent()) {
+            Map<String, Object> response = Map.of(
+                    "passed", false,
+                    "failureReasons", List.of(prerequisiteError.get())
+            );
+            return new ResponseEntity<>(response, HttpStatus.PRECONDITION_FAILED);
+        }
 
         List<String> failureReasons = panValidator.validate(request);
         boolean passed = failureReasons.isEmpty();

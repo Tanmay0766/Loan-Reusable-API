@@ -25,6 +25,16 @@ public class MandateRequest {
     private String umrn; // Unique Mandate Reference Number, present only if registered
     private String mandateStatus; // PENDING, REGISTERED, REJECTED, FAILED
 
+    private boolean gstApplicable;
+
+    public boolean isGstApplicable() {
+        return gstApplicable;
+    }
+
+    public void setGstApplicable(boolean gstApplicable) {
+        this.gstApplicable = gstApplicable;
+    }
+
     public Long getApplicationId() {
         return applicationId;
     }
